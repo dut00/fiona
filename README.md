@@ -14,7 +14,7 @@ npm run preview         # serve the build at http://localhost:4173/fiona/
 
 ## Deploy
 
-Live at **https://dut00.github.io/fiona/** (GitHub Pages). `https://kudu.dev/fiona` redirects there.
+Live at **https://dut00.github.io/fiona/** (GitHub Pages).
 
 ### Pipeline (`.github/workflows/deploy.yml`)
 1. Every push to `master` runs `npm ci` → `npm test` → `npm run build` and uploads `dist/`.
@@ -41,15 +41,6 @@ add the reviewer before approving anything important.
   `scope`/`start_url` depend on it. If the repo is renamed, update all three.
 - HTTPS is required (the microphone only works in a secure context); GitHub Pages provides it.
 - PWA users get the new version automatically on their next visit (service worker `autoUpdate`).
-
-### Redirect from kudu.dev/fiona
-Static file `fiona/index.html` on kudu.dev:
-```html
-<!doctype html>
-<meta http-equiv="refresh" content="0; url=https://dut00.github.io/fiona/">
-<link rel="canonical" href="https://dut00.github.io/fiona/">
-```
-or, with nginx: `location /fiona { return 301 https://dut00.github.io/fiona/; }`
 
 ## Layout
 - `src/audio/` — DSP (`fft`, `peaks`, `goertzel`, `tapDetector`, `tuner`) + browser engine (`engine.ts`: mic, tone, wake lock)

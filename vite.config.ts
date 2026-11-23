@@ -14,7 +14,7 @@ export default defineConfig(({ command, isPreview }) => ({
     command === 'serve' && !isPreview && basicSsl(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg'],
+      includeAssets: ['icon.svg', 'favicon.svg'],
       manifest: {
         name: 'Fiona — resonance finder',
         short_name: 'Fiona',

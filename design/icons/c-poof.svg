@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- C: "Poof" — minimal: a wine glass, a lone note, and feathers flying outward where the bird used to be -->
+  <rect width="512" height="512" rx="112" fill="#0f172a"/>
+  <path d="M170 150h172c0 84-36 136-86 144-50-8-86-60-86-144z" fill="#a5f3fc" fill-opacity=".1" stroke="#a5f3fc" stroke-width="16" stroke-linejoin="round"/>
+  <path d="M256 294v88M204 394h104" stroke="#a5f3fc" stroke-width="16" stroke-linecap="round"/>
+  <!-- note above the glass -->
+  <path d="M262 64v58a16 13 0 1 1 -9 -12V64z M262 64q30 6 34 30q-14 -14 -34 -12z" fill="#f472b6"/>
+  <!-- feathers -->
+  <g fill="#f9a8d4">
+    <path d="M96 140c18-26 50-30 64-18-20 4-40 14-64 18z"/>
+    <path d="M70 250c26-12 56-2 62 16-18-8-38-12-62-16z"/>
+    <path d="M412 112c-14-24-46-34-62-24 20 6 38 14 62 24z"/>
+    <path d="M444 236c-24-16-56-10-66 8 20-6 42-8 66-8z"/>
+    <path d="M118 360c10-26 40-38 58-30-18 10-36 20-58 30z" fill-opacity=".7"/>
+    <path d="M396 352c-8-26-38-40-56-34 18 10 34 22 56 34z" fill-opacity=".7"/>
+  </g>
+  <g fill="#fde047">
+    <circle cx="150" cy="196" r="6"/><circle cx="372" cy="176" r="5"/><circle cx="118" cy="306" r="4"/><circle cx="400" cy="296" r="5"/>
+  </g>
+</svg>

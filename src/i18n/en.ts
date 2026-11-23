@@ -63,5 +63,6 @@ export const en: typeof pl = {
   eggText: 'Fiona would be proud. The little bird… less so.',
   close: 'Close',
   about: 'How does it work?',
-  footer: 'Fiona — named after a certain princess who once sang with a little bird.',
+  footer: 'Fiona — named after the princess from “Shrek” who {link}.',
+  footerLink: 'sang with a little bird',
 }

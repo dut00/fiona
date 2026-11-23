@@ -218,7 +218,23 @@ function Main() {
 
       <History freq={m.freq} onUse={m.pick} />
 
-      <footer className="pt-4 text-center text-xs text-slate-600">{t('footer')}</footer>
+      <footer className="pt-4 text-center text-xs text-slate-600">
+        {t('footer').split('{link}').map((part, i) => (
+          <span key={i}>
+            {i > 0 && (
+              <a
+                href="https://www.youtube.com/results?search_query=shrek+fiona+bird"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-slate-700 underline-offset-2 hover:text-slate-400"
+              >
+                {t('footerLink')}
+              </a>
+            )}
+            {part}
+          </span>
+        ))}
+      </footer>
 
       {busy && (
         <div className="fixed inset-x-0 bottom-0 z-40 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent px-4 pt-6 pb-[max(1rem,env(safe-area-inset-bottom))]">

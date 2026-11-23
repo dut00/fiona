@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Social preview (OpenGraph). Render to public/og.png — see design/og/README.md -->
+  <defs>
+    <radialGradient id="glow" cx="300" cy="330" r="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#db2777" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#db2777" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#020617"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- resonance waves -->
+  <g fill="none" stroke="#a5f3fc" stroke-linecap="round">
+    <path d="M538 220a120 120 0 0 1 0 190" stroke-width="7" opacity=".7"/>
+    <path d="M574 175a170 170 0 0 1 0 280" stroke-width="6" opacity=".4"/>
+  </g>
+
+  <!-- icon (A v2: bird on a glass) -->
+  <g transform="translate(70 95) scale(.86)">
+    <rect width="512" height="512" rx="112" fill="#0f172a" stroke="#1e293b" stroke-width="4"/>
+    <g transform="translate(18 26) scale(.9)">
+      <path d="M64 214h262c0 112-52 170-131 180-79-10-131-68-131-180z" fill="#a5f3fc" fill-opacity=".16" stroke="#a5f3fc" stroke-width="30" stroke-linejoin="round"/>
+      <path d="M195 394v54M124 456h142" stroke="#a5f3fc" stroke-width="30" stroke-linecap="round"/>
+      <path d="M296 150 L246 118 L282 196Z" fill="#db2777"/>
+      <ellipse cx="370" cy="160" rx="98" ry="84" fill="#f472b6"/>
+      <ellipse cx="356" cy="190" rx="52" ry="36" fill="#fbcfe8"/>
+      <circle cx="404" cy="128" r="17" fill="#0f172a"/>
+      <circle cx="409" cy="122" r="6" fill="#fff"/>
+      <path d="M452 118 L504 98 L462 146Z" fill="#fbbf24"/>
+      <path d="M460 154 L500 172 L450 170Z" fill="#f59e0b"/>
+    </g>
+  </g>
+
+  <!-- text -->
+  <g font-family="Segoe UI, system-ui, -apple-system, Helvetica, Arial, sans-serif">
+    <text x="676" y="250" font-size="120" font-weight="800" fill="#fff" letter-spacing="-2">Fiona</text>
+    <text x="680" y="320" font-size="35" font-weight="600" fill="#f9a8d4">Wszystko ma swój ton</text>
+    <circle cx="698" cy="390" r="18" fill="none" stroke="#67e8f9" stroke-width="3"/>
+    <text x="698" y="399" font-size="22" font-weight="700" fill="#67e8f9" text-anchor="middle">1</text>
+    <text x="732" y="400" font-size="29" fill="#cbd5e1">Stuknij w kieliszek</text>
+    <circle cx="698" cy="448" r="18" fill="none" stroke="#67e8f9" stroke-width="3"/>
+    <text x="698" y="457" font-size="22" font-weight="700" fill="#67e8f9" text-anchor="middle">2</text>
+    <text x="732" y="458" font-size="29" fill="#cbd5e1">Aplikacja znajdzie jego ton</text>
+    <circle cx="698" cy="506" r="18" fill="none" stroke="#67e8f9" stroke-width="3"/>
+    <text x="698" y="515" font-size="22" font-weight="700" fill="#67e8f9" text-anchor="middle">3</text>
+    <text x="732" y="516" font-size="29" fill="#cbd5e1">Zagraj go — szkło zaśpiewa</text>
+  </g>
+</svg>

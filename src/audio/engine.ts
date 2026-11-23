@@ -28,6 +28,10 @@ class Microphone {
   private stream: MediaStream | null = null
   private node: AudioWorkletNode | null = null
   private analyser: AnalyserNode | null = null
+  private source: MediaStreamAudioSourceNode | null = null
+  private sink: GainNode | null = null
+  private starting: Promise<void> | null = null
+  private moduleLoaded = false
   private listeners = new Set<ChunkListener>()
   private levelBuf: Float32Array<ArrayBuffer> | null = null
   sampleRate = 48000
@@ -36,8 +40,14 @@ class Microphone {
     return this.stream !== null
   }
 
-  async start(): Promise<void> {
-    if (this.stream) return
+  /** Opens the microphone (idempotent; concurrent calls share one request). */
+  start(): Promise<void> {
+    if (this.stream) return Promise.resolve()
+    this.starting ??= this.open().finally(() => (this.starting = null))
+    return this.starting
+  }
+
+  private async open(): Promise<void> {
     if (!navigator.mediaDevices?.getUserMedia) {
       throw new MicrophoneError('unsupported', 'getUserMedia not available (HTTPS required)')
     }
@@ -59,7 +69,15 @@ class Microphone {
         String(e),
       )
     }
-    await ac.audioWorklet.addModule(workletUrl)
+    try {
+      if (!this.moduleLoaded) {
+        await ac.audioWorklet.addModule(workletUrl)
+        this.moduleLoaded = true
+      }
+    } catch (e) {
+      stream.getTracks().forEach((t) => t.stop())
+      throw e
+    }
     const src = ac.createMediaStreamSource(stream)
     const node = new AudioWorkletNode(ac, 'fiona-capture', { numberOfInputs: 1, numberOfOutputs: 1 })
     node.port.onmessage = (e: MessageEvent<Float32Array>) => {
@@ -75,17 +93,25 @@ class Microphone {
     src.connect(analyser)
 
     this.stream = stream
+    this.source = src
+    this.sink = sink
     this.node = node
     this.analyser = analyser
     this.levelBuf = new Float32Array(analyser.fftSize)
     this.sampleRate = ac.sampleRate
   }
 
+  /** Releases the microphone so the browser's "recording" indicator goes away. */
   stop() {
     this.stream?.getTracks().forEach((t) => t.stop())
+    this.source?.disconnect()
     this.node?.disconnect()
+    this.sink?.disconnect()
     this.analyser?.disconnect()
+    if (this.node) this.node.port.onmessage = null
     this.stream = null
+    this.source = null
+    this.sink = null
     this.node = null
     this.analyser = null
   }

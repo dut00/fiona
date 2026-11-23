@@ -51,6 +51,7 @@ export function usePlayer(freq: number | null, onLocked: (f: number) => void) {
     abortRef.current?.abort()
     abortRef.current = null
     tone.stop()
+    mic.stop() // only the tuner uses it; release it whenever playback ends
     if (timerRef.current !== null) clearInterval(timerRef.current)
     timerRef.current = null
     keepAwake(false)

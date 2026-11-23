@@ -47,6 +47,7 @@ export function useMeasure() {
       setStatus({ kind: 'listening' })
       try {
         await mic.start()
+        if (ctrl.signal.aborted) return
         const samples = await waitForTap(ctrl.signal)
         const s = spectrum(samples, mic.sampleRate)
         const found = findPeaks(s, { fMin: 150, fMax: 8000 })
@@ -83,12 +84,24 @@ export function useMeasure() {
         } else {
           setStatus({ kind: 'error', key: 'micError', msg: String(e) })
         }
+      } finally {
+        // Release the microphone as soon as the sample is taken (unless a newer listen took over).
+        if (abortRef.current === ctrl || abortRef.current === null) {
+          abortRef.current = null
+          mic.stop()
+        }
       }
     },
     [freq, taps],
   )
 
-  const cancel = useCallback(() => abortRef.current?.abort(), [])
+  /** Works at any stage, even while still waiting for the mic permission / audio start. */
+  const cancel = useCallback(() => {
+    abortRef.current?.abort()
+    abortRef.current = null
+    mic.stop()
+    setStatus({ kind: 'idle' })
+  }, [])
 
   /** Choose a different spectral peak (resets averaging). */
   const pick = useCallback((f: number) => {

@@ -1,7 +1,7 @@
 # Fiona
 
 Mobile-first PWA: measures an object's natural frequency from a tap (FFT), plays it back and
-auto-tunes to the exact resonance (sweep + microphone feedback). Idea: see `idea.md`.
+auto-tunes to the exact resonance (sweep + microphone feedback).
 
 ## Commands
 ```bash

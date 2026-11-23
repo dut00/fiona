@@ -178,18 +178,22 @@ function Main() {
           )}
           {!busy && <p className="text-xs text-slate-400">{t('tuneHint')}</p>}
 
-          {(p.mode === 'tuning' || p.mode === 'tracking' || p.coarsePoints.length > 0) && (
+          {(p.mode === 'tuning' || p.tunedFreq !== null) && (
             <div className="space-y-2">
               <div className="text-sm text-slate-300">
-                {p.mode === 'tuning' &&
-                  t('tuning', { stage: p.progress?.stage === 'fine' ? t('stageFine') : t('stageCoarse') })}
-                {p.mode === 'tracking' && t('tracking', { f: m.freq.toFixed(2) })}
+                {p.mode === 'tuning'
+                  ? t('tuning', { n: p.progress?.points.length ?? 0 })
+                  : p.tunedFreq !== null && (
+                      <span className="text-emerald-300">
+                        ✓ {t(busy ? 'tunedPlaying' : 'tuned', { f: p.tunedFreq.toFixed(2) })}
+                      </span>
+                    )}
               </div>
               <SweepChart
-                points={p.progress?.stage === 'fine' ? p.progress.points : p.coarsePoints}
-                current={p.mode === 'tuning' ? p.progress?.point.freq : m.freq}
+                points={p.progress?.points ?? p.points}
+                current={p.mode === 'tuning' ? p.progress?.point.freq : p.tunedFreq ?? undefined}
               />
-              {p.gainDb !== null && (
+              {p.mode !== 'tuning' && p.gainDb !== null && (
                 <div className="text-sm text-emerald-300">{t('tunedGain', { db: p.gainDb.toFixed(1) })}</div>
               )}
             </div>

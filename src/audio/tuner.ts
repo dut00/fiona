@@ -1,8 +1,13 @@
 /**
- * Resonance tuner: while a tone plays, step its frequency around the tap estimate and measure
- * (via the microphone) how strongly the object answers at each step. The object's ringing adds
- * to the speaker's direct sound, so in a narrow window — where the speaker response is flat —
- * the maximum of the measured amplitude marks the resonance.
+ * Resonance tuner: while a tone plays, change its frequency around the tap estimate and measure
+ * (via the microphone) how strongly the object answers. The object's ringing adds to the
+ * speaker's direct sound, so in a narrow window — where the speaker response is flat — the
+ * maximum of the measured amplitude marks the resonance.
+ *
+ * Strategy (≈15 measurements, ~3 s):
+ *  1. quick scan of a few points around the estimate (robust to a tap estimate ~1.5 Hz off),
+ *  2. hill-climb from the best point, halving the step whenever the centre beats both
+ *     neighbours, until the step is below `minStep` — then it is done.
  */
 
 /** Plays `freq`, waits for the object to respond, returns measured amplitude at `freq`. */
@@ -14,110 +19,99 @@ export interface SweepPoint {
 }
 
 export interface TunerProgress {
-  stage: 'coarse' | 'fine' | 'track'
+  stage: 'scan' | 'climb'
   point: SweepPoint
+  /** All measurements so far, sorted by frequency */
   points: SweepPoint[]
-  best: SweepPoint
 }
 
-function range(center: number, span: number, step: number): number[] {
-  const out: number[] = []
-  const n = Math.round(span / step)
-  for (let i = -n; i <= n; i++) out.push(+(center + i * step).toFixed(3))
-  return out
-}
-
-/** Light smoothing so a single noisy reading can't win the sweep. */
-function smoothedBest(points: SweepPoint[]): SweepPoint {
-  let best = points[0]
-  let bestScore = -Infinity
-  for (let i = 0; i < points.length; i++) {
-    const a = points[i - 1]?.amp ?? points[i].amp
-    const c = points[i + 1]?.amp ?? points[i].amp
-    const score = 0.25 * a + 0.5 * points[i].amp + 0.25 * c
-    if (score > bestScore) {
-      bestScore = score
-      best = points[i]
-    }
-  }
-  return best
-}
-
-async function sweep(
-  measure: Measure,
-  freqs: number[],
-  dwellMs: number,
-  stage: TunerProgress['stage'],
-  signal: AbortSignal,
-  onProgress?: (p: TunerProgress) => void,
-): Promise<SweepPoint> {
-  const points: SweepPoint[] = []
-  let best: SweepPoint = { freq: freqs[0], amp: -Infinity }
-  for (const freq of freqs) {
-    if (signal.aborted) throw new DOMException('Aborted', 'AbortError')
-    const amp = await measure(freq, dwellMs, signal)
-    const point = { freq, amp }
-    points.push(point)
-    if (amp > best.amp) best = point
-    onProgress?.({ stage, point, points, best })
-  }
-  return smoothedBest(points)
+export interface TuneResult {
+  freq: number
+  /** How much louder the response at the resonance is than the weakest measurement */
+  gainDb: number
+  points: SweepPoint[]
 }
 
 export interface TuneOptions {
-  coarseSpan?: number
-  coarseStep?: number
-  coarseDwellMs?: number
-  fineSpan?: number
-  fineStep?: number
-  fineDwellMs?: number
+  scanSpan?: number
+  scanStep?: number
+  initialStep?: number
+  minStep?: number
+  firstDwellMs?: number
+  dwellMs?: number
+  maxMeasurements?: number
 }
 
-/** Coarse sweep then fine sweep around the winner. Returns the resonance estimate. */
+const key = (f: number) => f.toFixed(3)
+
 export async function findResonance(
   measure: Measure,
   center: number,
   signal: AbortSignal,
   onProgress?: (p: TunerProgress) => void,
-  o: TuneOptions = {},
-): Promise<number> {
-  const coarse = await sweep(
-    measure,
-    range(center, o.coarseSpan ?? 5, o.coarseStep ?? 0.2),
-    o.coarseDwellMs ?? 250,
-    'coarse',
-    signal,
-    onProgress,
-  )
-  const fine = await sweep(
-    measure,
-    range(coarse.freq, o.fineSpan ?? 0.6, o.fineStep ?? 0.05),
-    o.fineDwellMs ?? 400,
-    'fine',
-    signal,
-    onProgress,
-  )
-  return fine.freq
-}
+  {
+    scanSpan = 1.5,
+    scanStep = 0.5,
+    initialStep = 0.25,
+    minStep = 0.05,
+    // first reading waits out the tone's fade-in and lets the object start ringing
+    firstDwellMs = 400,
+    dwellMs = 200,
+    maxMeasurements = 30,
+  }: TuneOptions = {},
+): Promise<TuneResult> {
+  const cache = new Map<string, SweepPoint>()
+  let stage: TunerProgress['stage'] = 'scan'
 
-/**
- * Hill-climbing tracker: keep driving at the resonance and follow it as it drifts
- * (temperature, liquid, fingers on the glass). Runs until aborted.
- */
-export async function trackResonance(
-  measure: Measure,
-  start: number,
-  signal: AbortSignal,
-  onUpdate?: (freq: number, amp: number) => void,
-  { delta = 0.05, dwellMs = 500, holdMs = 2000 } = {},
-): Promise<void> {
-  let f = start
-  while (!signal.aborted) {
-    const center = await measure(f, holdMs, signal)
-    onUpdate?.(f, center)
-    const lower = await measure(f - delta, dwellMs, signal)
-    const upper = await measure(f + delta, dwellMs, signal)
-    if (upper > center && upper >= lower) f = +(f + delta).toFixed(3)
-    else if (lower > center) f = +(f - delta).toFixed(3)
+  const at = async (f: number): Promise<number> => {
+    f = +f.toFixed(3)
+    const hit = cache.get(key(f))
+    if (hit) return hit.amp
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError')
+    const amp = await measure(f, cache.size === 0 ? firstDwellMs : dwellMs, signal)
+    const point = { freq: f, amp }
+    cache.set(key(f), point)
+    const points = [...cache.values()].sort((a, b) => a.freq - b.freq)
+    onProgress?.({ stage, point, points })
+    return amp
+  }
+
+  // 1. scan: centre first, then outwards
+  let f = center
+  let best = await at(center)
+  for (let d = scanStep; d <= scanSpan + 1e-9; d += scanStep) {
+    for (const cand of [center + d, center - d]) {
+      const a = await at(cand)
+      if (a > best) {
+        best = a
+        f = cand
+      }
+    }
+  }
+
+  // 2. hill-climb with shrinking step
+  stage = 'climb'
+  let step = initialStep
+  while (step >= minStep && cache.size < maxMeasurements) {
+    const up = await at(f + step)
+    const down = await at(f - step)
+    if (up > best && up >= down) {
+      f += step
+      best = up
+    } else if (down > best) {
+      f -= step
+      best = down
+    } else {
+      step /= 2
+    }
+  }
+
+  const points = [...cache.values()].sort((a, b) => a.freq - b.freq)
+  const top = points.reduce((b, p) => (p.amp > b.amp ? p : b), points[0])
+  const low = Math.min(...points.map((p) => p.amp))
+  return {
+    freq: top.freq,
+    gainDb: low > 0 ? 20 * Math.log10(top.amp / low) : 0,
+    points,
   }
 }

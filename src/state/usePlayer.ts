@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { keepAwake, mic, tone } from '../audio/engine'
 import { goertzel } from '../audio/goertzel'
-import { findResonance, trackResonance, type Measure, type SweepPoint, type TunerProgress } from '../audio/tuner'
+import { findResonance, type Measure, type SweepPoint, type TunerProgress } from '../audio/tuner'
 
-export type PlayMode = 'off' | 'playing' | 'tuning' | 'tracking'
+export type PlayMode = 'off' | 'playing' | 'tuning'
 
 /** Hearing protection: continuous playback is limited to this many seconds. */
 export const MAX_PLAY_S = 60
@@ -27,19 +27,16 @@ const micMeasure: Measure = async (freq, dwellMs, signal) => {
   return goertzel(samples, freq, mic.sampleRate)
 }
 
-function median(xs: number[]) {
-  const s = [...xs].sort((a, b) => a - b)
-  return s[Math.floor(s.length / 2)] ?? 0
-}
-
 export function usePlayer(freq: number | null, onLocked: (f: number) => void) {
   const [mode, setMode] = useState<PlayMode>('off')
   const [volume, setVolumeState] = useState(0.5)
   const [secondsLeft, setSecondsLeft] = useState(MAX_PLAY_S)
   const [autoStopped, setAutoStopped] = useState(false)
   const [progress, setProgress] = useState<TunerProgress | null>(null)
-  const [coarsePoints, setCoarsePoints] = useState<SweepPoint[]>([])
+  /** Measurements of the last finished tuning run */
+  const [points, setPoints] = useState<SweepPoint[]>([])
   const [gainDb, setGainDb] = useState<number | null>(null)
+  const [tunedFreq, setTunedFreq] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const abortRef = useRef<AbortController | null>(null)
@@ -88,8 +85,9 @@ export function usePlayer(freq: number | null, onLocked: (f: number) => void) {
     stop()
     setError(null)
     setGainDb(null)
+    setTunedFreq(null)
     setProgress(null)
-    setCoarsePoints([])
+    setPoints([])
     const ctrl = new AbortController()
     abortRef.current = ctrl
     try {
@@ -97,18 +95,16 @@ export function usePlayer(freq: number | null, onLocked: (f: number) => void) {
       await tone.start(freq, volume)
       setMode('tuning')
       startClock()
-      let coarse: SweepPoint[] = []
-      const locked = await findResonance(micMeasure, freq, ctrl.signal, (p) => {
-        if (p.stage === 'coarse') coarse = p.points
-        setCoarsePoints(coarse)
-        setProgress({ ...p, points: [...p.points] })
-      })
-      const bestAmp = Math.max(...coarse.map((p) => p.amp))
-      const base = median(coarse.map((p) => p.amp))
-      setGainDb(base > 0 ? 20 * Math.log10(bestAmp / base) : 0)
-      onLockedRef.current(locked)
-      setMode('tracking')
-      await trackResonance(micMeasure, locked, ctrl.signal, (f) => onLockedRef.current(f))
+      const result = await findResonance(micMeasure, freq, ctrl.signal, setProgress)
+      // Done: release the mic and keep driving the object at the found frequency.
+      mic.stop()
+      tone.setFrequency(result.freq)
+      setPoints(result.points)
+      setGainDb(result.gainDb)
+      setTunedFreq(result.freq)
+      onLockedRef.current(result.freq)
+      setProgress(null)
+      setMode('playing')
     } catch (e) {
       if ((e as DOMException)?.name !== 'AbortError') {
         setError(String(e))
@@ -144,8 +140,9 @@ export function usePlayer(freq: number | null, onLocked: (f: number) => void) {
     secondsLeft,
     autoStopped,
     progress,
-    coarsePoints,
+    points,
     gainDb,
+    tunedFreq,
     error,
     play,
     tune,

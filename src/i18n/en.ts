@@ -59,8 +59,9 @@ export const en: typeof pl = {
   delete: 'Delete',
   saved: 'Saved',
 
-  eggTitle: 'The glass sings!',
-  eggText: 'Fiona would be proud. The little bird… less so.',
+  eggTitle: 'Oops… too high!',
+  eggText: 'All that’s left are its legs… and some eggs for breakfast. 🍳',
+  eggReplay: 'Encore!',
   close: 'Close',
   about: 'How does it work?',
   footer: 'Fiona — named after the princess from “Shrek” who {link}.',

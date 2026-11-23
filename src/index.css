@@ -20,7 +20,8 @@ button {
   touch-action: manipulation;
 }
 
-/* --- Fiona easter egg --- */
+/* --- Fiona easter egg ---
+   timeline: sings 0–1.6 s → inflates → pops at ~2.3 s → feathers fly, only the legs remain */
 @keyframes egg-sing {
   0%, 100% { transform: scale(1) rotate(0deg); }
   25% { transform: scale(1.05) rotate(-4deg); }
@@ -32,15 +33,21 @@ button {
   100% { transform: scale(2.2); opacity: 0; }
 }
 @keyframes egg-feather {
-  0%, 70% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
-  75% { opacity: 1; }
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
   100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(1); opacity: 0; }
 }
 @keyframes egg-note {
-  0%, 60% { transform: translateY(0); opacity: 0; }
-  10% { opacity: 1; }
-  60% { transform: translateY(-30px); opacity: 0; }
-  100% { opacity: 0; }
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(-30px); opacity: 0; }
+}
+@keyframes egg-hide {
+  to { opacity: 0; visibility: hidden; }
+}
+@keyframes egg-legs {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-7deg); }
+  70% { transform: rotate(6deg); }
 }
 
 .egg-bird {
@@ -48,14 +55,23 @@ button {
 }
 .egg-feather {
   opacity: 0;
-  animation: egg-feather 2.6s ease-out forwards;
+  animation: egg-feather 1.3s ease-out 2.3s forwards;
 }
 .egg-note {
   opacity: 0;
-  animation: egg-note 2.4s ease-out infinite;
+  animation: egg-note 0.9s ease-out infinite;
+}
+/* notes stop as soon as the bird is gone */
+.egg-notes {
+  animation: egg-hide 0.2s ease-out 2.1s forwards;
+}
+.egg-legs {
+  transform-origin: 50% 86%;
+  animation: egg-legs 0.5s ease-in-out 2.6s 3;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .egg-bird, .egg-feather, .egg-note { animation: none; }
-  .egg-feather, .egg-note { display: none; }
+  .egg-bird, .egg-feather, .egg-note, .egg-notes, .egg-legs { animation: none; }
+  .egg-bird, .egg-feather, .egg-notes { display: none; }
 }
+

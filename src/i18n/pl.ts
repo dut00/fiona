@@ -57,8 +57,9 @@ export const pl = {
   delete: 'Usuń',
   saved: 'Zapisano',
 
-  eggTitle: 'Szkło śpiewa!',
-  eggText: 'Fiona byłaby dumna. Ptaszek… mniej.',
+  eggTitle: 'Ups… za wysoko!',
+  eggText: 'Zostały po nim tylko nóżki… i jajka na śniadanie. 🍳',
+  eggReplay: 'Bis!',
   close: 'Zamknij',
   about: 'Jak to działa?',
   footer: 'Fiona — na cześć księżniczki ze „Shreka”, która {link}.',

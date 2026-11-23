@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useI18n } from './i18n'
 import { LangSwitch } from './components/LangSwitch'
 import { WarningGate } from './components/WarningGate'
@@ -7,6 +7,7 @@ import { LevelMeter } from './components/LevelMeter'
 import { SweepChart } from './components/SweepChart'
 import { History } from './components/History'
 import { FionaEgg } from './components/FionaEgg'
+import { About, AboutButton } from './components/About'
 import { useMeasure } from './state/useMeasure'
 import { LOUD_VOLUME, usePlayer } from './state/usePlayer'
 import { storageGet, storageSet } from './state/history'
@@ -40,6 +41,8 @@ function Main() {
   const m = useMeasure()
   const p = usePlayer(m.freq, m.setFrequency)
   const [egg, setEgg] = useState(false)
+  const [about, setAbout] = useState(false)
+  const closeAbout = useCallback(() => setAbout(false), [])
   const logoTaps = useRef<number[]>([])
 
   const listening = m.status.kind === 'listening'
@@ -70,7 +73,10 @@ function Main() {
             <div className="text-xs text-slate-400">{t('tagline')}</div>
           </div>
         </button>
-        <LangSwitch />
+        <div className="flex items-center gap-2">
+          <AboutButton onClick={() => setAbout(true)} />
+          <LangSwitch />
+        </div>
       </header>
 
       <Card>
@@ -231,6 +237,7 @@ function Main() {
       )}
 
       {egg && <FionaEgg onClose={() => setEgg(false)} />}
+      {about && <About onClose={closeAbout} />}
     </div>
   )
 }

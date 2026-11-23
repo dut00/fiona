@@ -60,5 +60,6 @@ export const pl = {
   eggTitle: 'Szkło śpiewa!',
   eggText: 'Fiona byłaby dumna. Ptaszek… mniej.',
   close: 'Zamknij',
+  about: 'Jak to działa?',
   footer: 'Fiona — nazwa nawiązuje do pewnej księżniczki, która śpiewała z ptaszkiem.',
 }

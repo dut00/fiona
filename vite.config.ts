@@ -14,7 +14,7 @@ export default defineConfig(({ command, isPreview }) => ({
     command === 'serve' && !isPreview && basicSsl(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg', 'favicon.svg'],
+      includeAssets: ['icon.svg', 'favicon.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Fiona — resonance finder',
         short_name: 'Fiona',
@@ -25,9 +25,14 @@ export default defineConfig(({ command, isPreview }) => ({
         orientation: 'portrait',
         scope: '/fiona/',
         start_url: '/fiona/',
+        // A v2 logo (design/icons/a2-duet-small.svg). The maskable variant keeps the artwork inside
+        // the safe zone, otherwise Android's circular crop cuts off the bird's beak.
         icons: [
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icon-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),

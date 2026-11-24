@@ -1,6 +1,6 @@
 # Alternative icons
 
-Logo proposals, **not used by the app yet** (the current icon is `public/icon.svg`).
+Logo proposals. **A v2 is the app icon** (`public/icon.svg`, favicon, PWA icons); the others are alternatives.
 All artwork is original — the bird only nods to the idea of the scene, it is not the film character.
 
 | File | Idea | Notes |
@@ -12,4 +12,12 @@ All artwork is original — the bird only nods to the idea of the scene, it is n
 
 Previews (open in a browser): `preview.html` (A, B, C at several sizes), `preview-a2.html` (A vs A v2, dark and light background).
 
-To switch: copy the chosen SVG to `public/icon.svg` (used as favicon, PWA icon and header logo).
+To switch to another design:
+1. copy the SVG to `public/icon.svg` (header logo + PWA icon) and `public/favicon.svg` (browser tab),
+2. rebuild `public/icon-maskable.svg` — full-bleed background, artwork scaled to ~0.78 around the centre
+   so it survives Android's circular crop,
+3. regenerate the PNGs (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png`
+   180×180 from the maskable SVG) with headless Chrome, e.g.
+   `chrome --headless=new --default-background-color=00000000 --window-size=512,512 --screenshot=… file:///…/icon.svg`.
+   Below ~500 px Chrome's viewport is wider than the window, so render small sizes through an HTML page
+   with `<img width=N height=N style="position:fixed;left:0;top:0">`.

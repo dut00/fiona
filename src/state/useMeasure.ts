@@ -50,7 +50,7 @@ export function useMeasure() {
         if (ctrl.signal.aborted) return
         const samples = await waitForTap(ctrl.signal)
         const s = spectrum(samples, mic.sampleRate)
-        const found = findPeaks(s, { fMin: 150, fMax: 8000 })
+        const found = findPeaks(s)
         if (found.length === 0) {
           setStatus({ kind: 'error', key: 'noPeak' })
           return

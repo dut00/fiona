@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { Spectrum } from '../audio/fft'
-import type { Peak } from '../audio/peaks'
+import { PEAK_F_MAX, PEAK_F_MIN, type Peak } from '../audio/peaks'
 
 const F_MIN = 100
 const F_MAX = 10000
@@ -73,6 +73,22 @@ export function SpectrumChart({ spec, peaks, selected, onPick }: Props) {
       g.fill()
       g.strokeStyle = '#f9a8d4'
       g.stroke()
+
+      // dim the ranges that are not searched for peaks
+      g.fillStyle = 'rgba(2,6,23,0.6)'
+      g.strokeStyle = 'rgba(148,163,184,0.35)'
+      g.setLineDash([2, 3])
+      for (const [x0, x1, edge] of [
+        [0, xOf(PEAK_F_MIN, w), xOf(PEAK_F_MIN, w)],
+        [xOf(PEAK_F_MAX, w), w, xOf(PEAK_F_MAX, w)],
+      ]) {
+        g.fillRect(x0, 0, x1 - x0, h - 12)
+        g.beginPath()
+        g.moveTo(Math.round(edge) + 0.5, 0)
+        g.lineTo(Math.round(edge) + 0.5, h - 12)
+        g.stroke()
+      }
+      g.setLineDash([])
 
       // peaks
       for (const p of peaks) {

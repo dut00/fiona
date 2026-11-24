@@ -43,6 +43,32 @@ describe('spectrum + findPeaks', () => {
     expect(Math.abs(peaks[0].freq - 700)).toBeLessThan(0.2)
     expect(peaks.some((p) => Math.abs(p.freq - 1930) < 0.5)).toBe(true)
   })
+
+  it('reports one peak for a cluster of neighbouring modes (no stacked dots)', () => {
+    // Real recording: 1765.6 Hz with a weaker neighbour at 1736.4 Hz (1.6 % apart).
+    const sr = 48000
+    const sig = ring(1765.6, sr, 1, { partials: [[1736.4, 0.1], [4430, 0.2], [4410, 0.08], [4462, 0.05]] })
+    const peaks = findPeaks(spectrum(sig, sr))
+    expect(Math.abs(peaks[0].freq - 1765.6)).toBeLessThan(0.2)
+    for (const a of peaks)
+      for (const b of peaks) if (a !== b) expect(Math.abs(a.freq - b.freq) / a.freq).toBeGreaterThan(0.03)
+  })
+
+  it('ignores a loud low-frequency noise hump (thud, hum)', () => {
+    const sr = 48000
+    const sig = ring(1200, sr, 1, { amp: 0.2, noise: 0 })
+    // one-pole low-pass of white noise: strong, irregular energy below ~300 Hz
+    const rand = makeRand(7)
+    const a = Math.exp((-2 * Math.PI * 250) / sr)
+    let y = 0
+    for (let i = 0; i < sig.length; i++) {
+      y = a * y + (1 - a) * rand()
+      sig[i] += 4 * y
+    }
+    const peaks = findPeaks(spectrum(sig, sr))
+    expect(Math.abs(peaks[0].freq - 1200)).toBeLessThan(0.3)
+    expect(peaks.every((p) => p.freq > 1000)).toBe(true)
+  })
 })
 
 describe('goertzel', () => {

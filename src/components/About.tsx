@@ -79,9 +79,11 @@ const content: Record<Lang, { title: string; intro: string; sections: Section[] 
         body: (
           <>
             <p>
-              W zakresie 150–8000 Hz aplikacja szuka lokalnych maksimów, które wystają co najmniej 10 dB ponad otoczenie
-              i nie są więcej niż 40 dB słabsze od najsilniejszego (resztę uznaje za szum). Najsilniejszy szczyt to
-              domyślny wynik, pozostałe to wyższe mody drgań — można je wybrać, stukając w wykres.
+              W zakresie 150–6000 Hz (poza nim wykres jest przyciemniony) aplikacja szuka ostrych szczytów: każdy musi
+              być najwyższy w promieniu ±3% swojej częstotliwości i wystawać co najmniej 18 dB ponad typowy poziom
+              otoczenia. Szum i dudnienie uderzenia tworzą gęsty „grzebień” niskich garbów, który tych warunków nie
+              spełnia. Najsilniejszy szczyt to domyślny wynik, pozostałe to wyższe mody drgań — można je wybrać,
+              stukając w wykres.
             </p>
             <p>
               Żeby wyjść poza dokładność siatki 0,73 Hz, przez trzy najwyższe punkty szczytu (w dB) prowadzona jest
@@ -199,9 +201,10 @@ const content: Record<Lang, { title: string; intro: string; sections: Section[] 
         body: (
           <>
             <p>
-              Between 150 and 8000 Hz the app looks for local maxima that stand at least 10 dB above their surroundings
-              and are no more than 40 dB below the strongest one (the rest is treated as noise). The strongest peak is
-              the default result; the others are higher vibration modes — tap the chart to pick one.
+              Between 150 and 6000 Hz (the chart is dimmed outside this range) the app looks for sharp peaks: each
+              must be the highest point within ±3% of its frequency and stand at least 18 dB above the typical level
+              around it. Noise and the thud of the impact form a dense comb of low bumps that fail these tests. The
+              strongest peak is the default result; the others are higher vibration modes — tap the chart to pick one.
             </p>
             <p>
               To beat the 0.73 Hz grid, a parabola is fitted through the three highest points of the peak (in dB) — its

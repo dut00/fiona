@@ -106,6 +106,16 @@ function Main() {
             {!peakSettings.isDefault && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-pink-500" />}
           </button>
         </div>
+
+        {showSettings && (
+          <PeakSettings
+            options={peakSettings.options}
+            onChange={peakSettings.set}
+            onReset={peakSettings.reset}
+            isDefault={peakSettings.isDefault}
+          />
+        )}
+
         {m.freq === null && <p className="text-sm text-slate-400">{t('step1Hint')}</p>}
 
         {m.freq !== null && (
@@ -143,16 +153,6 @@ function Main() {
             />
             <p className="text-xs text-slate-500">{t('tapToPick')}</p>
           </div>
-        )}
-
-        {/* below the chart, so the effect of each slider is visible while adjusting */}
-        {showSettings && (
-          <PeakSettings
-            options={peakSettings.options}
-            onChange={peakSettings.set}
-            onReset={peakSettings.reset}
-            isDefault={peakSettings.isDefault}
-          />
         )}
 
         {listening ? (

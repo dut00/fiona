@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { mic, MicrophoneError } from '../audio/engine'
 import { spectrum, type Spectrum } from '../audio/fft'
-import { findPeaks, type Peak } from '../audio/peaks'
+import { findPeaks, type PeakOptions } from '../audio/peaks'
 import { TapDetector } from '../audio/tapDetector'
 import type { Key } from '../i18n'
 
@@ -31,13 +31,19 @@ function waitForTap(signal: AbortSignal): Promise<Float32Array> {
   })
 }
 
-export function useMeasure() {
+export function useMeasure(peakOptions: PeakOptions) {
   const [status, setStatus] = useState<MeasureStatus>({ kind: 'idle' })
   const [spec, setSpec] = useState<Spectrum | null>(null)
-  const [peaks, setPeaks] = useState<Peak[]>([])
   const [taps, setTaps] = useState<number[]>([])
   const [freq, setFreq] = useState<number | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const optionsRef = useRef(peakOptions)
+  useEffect(() => {
+    optionsRef.current = peakOptions
+  }, [peakOptions])
+
+  // Re-evaluated whenever the user changes the detection settings — no need to tap again.
+  const peaks = useMemo(() => (spec ? findPeaks(spec, peakOptions) : []), [spec, peakOptions])
 
   const listen = useCallback(
     async (addToAverage = false) => {
@@ -50,13 +56,13 @@ export function useMeasure() {
         if (ctrl.signal.aborted) return
         const samples = await waitForTap(ctrl.signal)
         const s = spectrum(samples, mic.sampleRate)
-        const found = findPeaks(s)
+        const found = findPeaks(s, optionsRef.current)
+        // Show the spectrum even without a clear peak — the user can relax the detection settings.
+        setSpec(s)
         if (found.length === 0) {
           setStatus({ kind: 'error', key: 'noPeak' })
           return
         }
-        setSpec(s)
-        setPeaks(found)
 
         let nextTaps: number[]
         if (addToAverage && freq !== null) {

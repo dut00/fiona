@@ -15,24 +15,34 @@ export function interpolatePeak(db: Float32Array, k: number, binHz: number): Pea
   return { freq: (k + p) * binHz, db: b - 0.25 * (a - c) * p }
 }
 
-/** Frequency range searched for resonances (also shaded on the spectrum chart). */
-export const PEAK_F_MIN = 150
-export const PEAK_F_MAX = 6000
-
-export interface FindPeaksOptions {
-  fMin?: number
-  fMax?: number
+export interface PeakOptions {
+  /** Searched frequency range (also shaded on the spectrum chart) */
+  fMin: number
+  fMax: number
   /** Max number of peaks returned */
-  count?: number
+  count: number
   /** A peak must be the highest bin within ±this fraction of its frequency (0.03 ≈ half a semitone) */
-  separationRel?: number
+  separationRel: number
   /** ...and within at least ±this many Hz (matters at low frequencies) */
-  separationHz?: number
+  separationHz: number
   /** Required height above the median level of the surrounding ±neighbourhoodRel band */
-  prominenceDb?: number
-  neighbourhoodRel?: number
+  prominenceDb: number
+  neighbourhoodRel: number
   /** Drop peaks this far below the strongest one */
-  maxBelowTopDb?: number
+  maxBelowTopDb: number
+}
+
+export type FindPeaksOptions = Partial<PeakOptions>
+
+export const DEFAULT_PEAK_OPTIONS: Readonly<PeakOptions> = {
+  fMin: 150,
+  fMax: 6000,
+  count: 5,
+  separationRel: 0.03,
+  separationHz: 15,
+  prominenceDb: 18,
+  neighbourhoodRel: 0.1,
+  maxBelowTopDb: 30,
 }
 
 /**
@@ -45,19 +55,11 @@ export interface FindPeaksOptions {
  *  - at least prominenceDb above the median of its ±neighbourhoodRel band (ignoring ±1 %
  *    around the peak itself), which rejects noise humps.
  */
-export function findPeaks(
-  spec: Spectrum,
-  {
-    fMin = PEAK_F_MIN,
-    fMax = PEAK_F_MAX,
-    count = 5,
-    separationRel = 0.03,
-    separationHz = 15,
-    prominenceDb = 18,
-    neighbourhoodRel = 0.1,
-    maxBelowTopDb = 30,
-  }: FindPeaksOptions = {},
-): Peak[] {
+export function findPeaks(spec: Spectrum, options: FindPeaksOptions = {}): Peak[] {
+  const { fMin, fMax, count, separationRel, separationHz, prominenceDb, neighbourhoodRel, maxBelowTopDb } = {
+    ...DEFAULT_PEAK_OPTIONS,
+    ...options,
+  }
   const { db, binHz } = spec
   const last = db.length - 1
   const kMin = Math.max(1, Math.floor(fMin / binHz))

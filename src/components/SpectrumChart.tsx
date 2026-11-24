@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { Spectrum } from '../audio/fft'
-import { PEAK_F_MAX, PEAK_F_MIN, type Peak } from '../audio/peaks'
+import type { Peak } from '../audio/peaks'
 
 const F_MIN = 100
 const F_MAX = 10000
@@ -14,9 +14,12 @@ interface Props {
   peaks: Peak[]
   selected: number | null
   onPick: (f: number) => void
+  /** Range searched for peaks; everything outside is dimmed */
+  searchRange: [number, number]
 }
 
-export function SpectrumChart({ spec, peaks, selected, onPick }: Props) {
+export function SpectrumChart({ spec, peaks, selected, onPick, searchRange }: Props) {
+  const [searchMin, searchMax] = searchRange
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -79,8 +82,8 @@ export function SpectrumChart({ spec, peaks, selected, onPick }: Props) {
       g.strokeStyle = 'rgba(148,163,184,0.35)'
       g.setLineDash([2, 3])
       for (const [x0, x1, edge] of [
-        [0, xOf(PEAK_F_MIN, w), xOf(PEAK_F_MIN, w)],
-        [xOf(PEAK_F_MAX, w), w, xOf(PEAK_F_MAX, w)],
+        [0, xOf(searchMin, w), xOf(searchMin, w)],
+        [xOf(searchMax, w), w, xOf(searchMax, w)],
       ]) {
         g.fillRect(x0, 0, x1 - x0, h - 12)
         g.beginPath()
@@ -114,7 +117,7 @@ export function SpectrumChart({ spec, peaks, selected, onPick }: Props) {
     const ro = new ResizeObserver(draw)
     ro.observe(canvas)
     return () => ro.disconnect()
-  }, [spec, peaks, selected])
+  }, [spec, peaks, selected, searchMin, searchMax])
 
   const onPointer = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()

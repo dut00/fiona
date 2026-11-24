@@ -22,6 +22,7 @@ export const pl = {
   noTap: 'Nie wykryto stuknięcia. Spróbuj mocniej lub bliżej mikrofonu.',
   micDenied: 'Brak dostępu do mikrofonu. Zezwól na mikrofon w ustawieniach przeglądarki.',
   micUnsupported: 'Mikrofon niedostępny. Aplikacja wymaga HTTPS i nowoczesnej przeglądarki.',
+  micSilent: 'Mikrofon nie przesyła dźwięku. Zamknij aplikację całkowicie i otwórz ją ponownie.',
   micError: 'Błąd mikrofonu: {msg}',
   noPeak: 'Nie znaleziono wyraźnego tonu. Stuknij jeszcze raz albo złagodź ustawienia wykrywania (⚙).',
 

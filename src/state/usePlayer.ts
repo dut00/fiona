@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { keepAwake, mic, tone } from '../audio/engine'
 import { goertzel } from '../audio/goertzel'
 import { findResonance, type Measure, type SweepPoint, type TunerProgress } from '../audio/tuner'
+import { toAppError, type AppError } from './micError'
 
 export type PlayMode = 'off' | 'playing' | 'tuning'
 
@@ -37,7 +38,7 @@ export function usePlayer(freq: number | null, onLocked: (f: number) => void) {
   const [points, setPoints] = useState<SweepPoint[]>([])
   const [gainDb, setGainDb] = useState<number | null>(null)
   const [tunedFreq, setTunedFreq] = useState<number | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<AppError | null>(null)
 
   const abortRef = useRef<AbortController | null>(null)
   const timerRef = useRef<number | null>(null)
@@ -107,7 +108,7 @@ export function usePlayer(freq: number | null, onLocked: (f: number) => void) {
       setMode('playing')
     } catch (e) {
       if ((e as DOMException)?.name !== 'AbortError') {
-        setError(String(e))
+        setError(toAppError(e))
         stop()
       }
     }

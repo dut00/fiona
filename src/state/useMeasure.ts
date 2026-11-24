@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { mic, MicrophoneError } from '../audio/engine'
+import { mic } from '../audio/engine'
 import { spectrum, type Spectrum } from '../audio/fft'
 import { findPeaks, type PeakOptions } from '../audio/peaks'
 import { TapDetector } from '../audio/tapDetector'
 import type { Key } from '../i18n'
+import { toAppError } from './micError'
 
 export type MeasureStatus =
   | { kind: 'idle' }
@@ -79,16 +80,10 @@ export function useMeasure(peakOptions: PeakOptions) {
       } catch (e) {
         if ((e as DOMException)?.name === 'AbortError') {
           setStatus({ kind: 'idle' })
-        } else if (e instanceof MicrophoneError) {
-          setStatus({
-            kind: 'error',
-            key: e.kind === 'denied' ? 'micDenied' : e.kind === 'unsupported' ? 'micUnsupported' : 'micError',
-            msg: e.message,
-          })
         } else if ((e as Error)?.message === 'timeout') {
           setStatus({ kind: 'error', key: 'noTap' })
         } else {
-          setStatus({ kind: 'error', key: 'micError', msg: String(e) })
+          setStatus({ kind: 'error', ...toAppError(e) })
         }
       } finally {
         // Release the microphone as soon as the sample is taken (unless a newer listen took over).
@@ -108,6 +103,13 @@ export function useMeasure(peakOptions: PeakOptions) {
     mic.stop()
     setStatus({ kind: 'idle' })
   }, [])
+
+  // Going to the background releases the mic (engine.ts); stop waiting for a tap that can't come.
+  useEffect(() => {
+    const onHide = () => document.visibilityState === 'hidden' && abortRef.current && cancel()
+    document.addEventListener('visibilitychange', onHide)
+    return () => document.removeEventListener('visibilitychange', onHide)
+  }, [cancel])
 
   /** Choose a different spectral peak (resets averaging). */
   const pick = useCallback((f: number) => {

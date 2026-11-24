@@ -24,6 +24,7 @@ export const en: typeof pl = {
   noTap: 'No tap detected. Try tapping harder or closer to the microphone.',
   micDenied: 'Microphone access denied. Allow the microphone in your browser settings.',
   micUnsupported: 'Microphone unavailable. The app needs HTTPS and a modern browser.',
+  micSilent: 'The microphone delivers no sound. Close the app completely and open it again.',
   micError: 'Microphone error: {msg}',
   noPeak: 'No clear tone found. Tap again, or relax the detection settings (⚙).',
 

@@ -252,7 +252,7 @@ function Main() {
               {t('autoStopped', { s: 60 })}
             </p>
           )}
-          {p.error && <p className="text-sm text-amber-300">{p.error}</p>}
+          {p.error && <p className="text-sm text-amber-300">{t(p.error.key, { msg: p.error.msg ?? '' })}</p>}
           {isIOS && <p className="text-xs text-slate-500">{t('iosMute')}</p>}
         </Card>
       )}
